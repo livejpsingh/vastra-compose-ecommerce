@@ -45,14 +45,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.vastra.store.data.model.Product
 import com.vastra.store.ui.ShopUiState
 import com.vastra.store.ui.components.EmptyState
 import com.vastra.store.ui.components.PriceBlock
+import com.vastra.store.ui.components.ProductImage
 import com.vastra.store.ui.components.QuantityStepper
 import com.vastra.store.ui.components.RatingPill
 import com.vastra.store.ui.components.SectionHeader
@@ -101,7 +100,7 @@ fun ProductDetailScreen(
                 EmptyState(
                     icon = Icons.Filled.Storefront,
                     title = "This piece is no longer in the catalogue",
-                    message = "Pull the shop down to refresh, then open it again.",
+                    message = "Return to the shop and refresh the catalogue, then try again.",
                     actionLabel = "Go back",
                     onAction = onBack
                 )
@@ -122,20 +121,29 @@ fun ProductDetailScreen(
             val pagerState = rememberPagerState(pageCount = { images.size })
 
             Box {
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(0.85f)
-                ) { page ->
-                    AsyncImage(
-                        model = images[page],
+                if (images.isEmpty()) {
+                    ProductImage(
+                        model = null,
                         contentDescription = product.title,
-                        contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .fillMaxWidth()
+                            .aspectRatio(0.85f)
                     )
+                } else {
+                    HorizontalPager(
+                        state = pagerState,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(0.85f)
+                    ) { page ->
+                        ProductImage(
+                            model = images[page],
+                            contentDescription = product.title,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                        )
+                    }
                 }
                 if (images.size > 1) {
                     Row(
@@ -160,6 +168,22 @@ fun ProductDetailScreen(
                         }
                     }
                 }
+                if (images.size > 1) {
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(12.dp),
+                        shape = RoundedCornerShape(50),
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)
+                    ) {
+                        Text(
+                            text = "${pagerState.currentPage + 1} / ${images.size}",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                        )
+                    }
+                }
             }
 
             Column(Modifier.padding(horizontal = 18.dp, vertical = 16.dp)) {
@@ -170,16 +194,23 @@ fun ProductDetailScreen(
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(text = product.title, style = MaterialTheme.typography.headlineSmall)
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(10.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RatingPill(product.rating)
                     Spacer(Modifier.width(10.dp))
-                    Text(
-                        text = if (product.inStock) "${product.stock} in stock" else "Out of stock",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = if (product.inStock) MaterialTheme.colorScheme.onSurfaceVariant
-                        else MaterialTheme.colorScheme.error
-                    )
+                    Surface(
+                        color = if (product.inStock) MaterialTheme.colorScheme.tertiary.copy(alpha = 0.12f)
+                        else MaterialTheme.colorScheme.errorContainer,
+                        shape = RoundedCornerShape(50)
+                    ) {
+                        Text(
+                            text = if (product.inStock) "In stock" else "Out of stock",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = if (product.inStock) MaterialTheme.colorScheme.tertiary
+                            else MaterialTheme.colorScheme.onErrorContainer,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                        )
+                    }
                 }
                 Spacer(Modifier.height(12.dp))
                 PriceBlock(product = product, large = true)
@@ -272,28 +303,38 @@ fun ProductDetailScreen(
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                Column(Modifier.padding(end = 12.dp)) {
+                    Text(
+                        text = "YOUR PRICE",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = formatInr(product.finalPrice * quantity),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
                 Button(
                     onClick = { onAddToCart(product, selectedSize, quantity) },
                     enabled = product.inStock,
-                    shape = RoundedCornerShape(50),
+                    shape = RoundedCornerShape(14.dp),
                     modifier = Modifier
                         .weight(1f)
-                        .height(50.dp)
+                        .height(52.dp)
                 ) {
                     Text(
-                        text = if (product.inStock) {
-                            "Add to bag · ${formatInr(product.finalPrice * quantity)}"
-                        } else {
-                            "Out of stock"
-                        },
+                        text = if (product.inStock) "Add to bag" else "Out of stock",
                         fontWeight = FontWeight.SemiBold
                     )
                 }
                 Spacer(Modifier.width(10.dp))
                 OutlinedButton(
                     onClick = onGoToBag,
-                    shape = RoundedCornerShape(50),
-                    modifier = Modifier.height(50.dp)
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .size(52.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Filled.ShoppingCart,

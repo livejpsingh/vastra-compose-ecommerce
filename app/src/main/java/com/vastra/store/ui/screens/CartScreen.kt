@@ -32,15 +32,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.vastra.store.data.model.CartLine
 import com.vastra.store.ui.ShopUiState
 import com.vastra.store.ui.components.EmptyState
 import com.vastra.store.ui.components.QuantityStepper
+import com.vastra.store.ui.components.ProductImage
 import com.vastra.store.ui.components.SummaryRow
 import com.vastra.store.ui.components.VastraTopBar
 import com.vastra.store.util.Pricing
@@ -70,6 +70,20 @@ fun CartScreen(
                 )
             }
         } else {
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = "Your picks",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    text = "${state.cartCount} ${if (state.cartCount == 1) "piece" else "pieces"} in your bag",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             LazyColumn(
                 modifier = Modifier.weight(1f),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -86,8 +100,8 @@ fun CartScreen(
 
             Surface(
                 color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 3.dp,
-                shadowElevation = 8.dp
+                tonalElevation = 2.dp,
+                shadowElevation = 6.dp
             ) {
                 Column(Modifier.padding(horizontal = 18.dp, vertical = 14.dp)) {
                     if (state.hasOutOfStockInCart) {
@@ -134,10 +148,10 @@ fun CartScreen(
                     Button(
                         onClick = onCheckout,
                         enabled = !state.hasOutOfStockInCart,
-                        shape = RoundedCornerShape(50),
+                        shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp)
+                            .height(52.dp)
                     ) {
                         Text("Proceed to checkout", fontWeight = FontWeight.SemiBold)
                     }
@@ -154,18 +168,19 @@ private fun CartRow(
     onRemove: (Int, String?) -> Unit
 ) {
     Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 1.dp,
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(modifier = Modifier.padding(10.dp)) {
-            AsyncImage(
+            ProductImage(
                 model = line.product.thumbnail,
                 contentDescription = line.product.title,
-                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(78.dp)
-                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
             )
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
