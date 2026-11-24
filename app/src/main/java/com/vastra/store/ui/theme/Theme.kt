@@ -9,25 +9,25 @@ import androidx.compose.ui.graphics.Color
 
 private val LightScheme = lightColorScheme(
     primary = Berry,
-    onPrimary = Ivory,
+    onPrimary = Color.White,
     primaryContainer = BerryLight,
     onPrimaryContainer = BerryDark,
     secondary = Bronze,
-    onSecondary = Ivory,
+    onSecondary = Color.White,
     secondaryContainer = BronzeLight,
     onSecondaryContainer = Color(0xFF2A1A00),
     tertiary = Teal,
-    onTertiary = Ivory,
+    onTertiary = Color.White,
     background = Ivory,
     onBackground = Ink,
-    surface = Ivory,
+    surface = Color.White,
     onSurface = Ink,
     surfaceVariant = Sand,
-    onSurfaceVariant = Color(0xFF5A4A42),
-    outline = Color(0xFF8C7A70),
-    outlineVariant = Color(0xFFE0D2C8),
+    onSurfaceVariant = Color(0xFF62565C),
+    outline = Color(0xFF887C81),
+    outlineVariant = Color(0xFFE6DDE1),
     error = Color(0xFFB3261E),
-    onError = Ivory
+    onError = Color.White
 )
 
 private val DarkScheme = darkColorScheme(

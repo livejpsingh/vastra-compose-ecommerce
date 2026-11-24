@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -99,26 +101,39 @@ fun CheckoutScreen(
                 .padding(horizontal = 16.dp)
         ) {
             SectionHeader("Delivery address")
-            AddressFields(
-                address = form,
-                onChange = {
-                    form = it
-                    error = null
-                }
-            )
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            ) {
+                AddressFields(
+                    address = form,
+                    onChange = {
+                        form = it
+                        error = null
+                    },
+                    modifier = Modifier.padding(14.dp)
+                )
+            }
 
             Spacer(Modifier.height(18.dp))
             SectionHeader("Payment method")
             Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
             ) {
-                Column(Modifier.padding(vertical = 4.dp)) {
+                Column(Modifier.padding(8.dp)) {
                     paymentMethods.forEach { (value, label) ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 2.dp),
+                                .background(
+                                    color = if (payment == value) MaterialTheme.colorScheme.primaryContainer
+                                    else MaterialTheme.colorScheme.surface,
+                                    shape = RoundedCornerShape(14.dp)
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             RadioButton(
@@ -134,14 +149,15 @@ fun CheckoutScreen(
                 text = "Demo app: simulated order placement without external gateway.",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 4.dp, top = 6.dp)
+                modifier = Modifier.padding(start = 4.dp, top = 8.dp)
             )
 
             Spacer(Modifier.height(18.dp))
             SectionHeader("Order summary")
             Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
             ) {
                 Column(Modifier.padding(14.dp)) {
                     state.cart.forEach { line ->
@@ -157,7 +173,7 @@ fun CheckoutScreen(
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.weight(1f)
                             )
-                            Spacer(Modifier.padding(horizontal = 4.dp))
+                            Spacer(Modifier.width(8.dp))
                             Text(
                                 text = formatInrExact(line.lineTotal),
                                 style = MaterialTheme.typography.bodyMedium
@@ -208,11 +224,11 @@ fun CheckoutScreen(
                     )
                 },
                 enabled = !state.isPlacingOrder,
-                shape = RoundedCornerShape(50),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 12.dp)
-                    .height(50.dp)
+                    .height(52.dp),
+                shape = RoundedCornerShape(14.dp)
             ) {
                 if (state.isPlacingOrder) {
                     CircularProgressIndicator(
@@ -243,6 +259,7 @@ fun AddressFields(
             onValueChange = { onChange(address.copy(fullName = it)) },
             label = { Text("Full name") },
             singleLine = true,
+            shape = RoundedCornerShape(14.dp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
             modifier = Modifier.fillMaxWidth()
         )
@@ -254,6 +271,7 @@ fun AddressFields(
             },
             label = { Text("Mobile number") },
             singleLine = true,
+            shape = RoundedCornerShape(14.dp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
             modifier = Modifier.fillMaxWidth()
         )
@@ -262,6 +280,7 @@ fun AddressFields(
             value = address.line1,
             onValueChange = { onChange(address.copy(line1 = it)) },
             label = { Text("Flat / house no., building, street") },
+            shape = RoundedCornerShape(14.dp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
             modifier = Modifier.fillMaxWidth()
         )
@@ -272,6 +291,7 @@ fun AddressFields(
                 onValueChange = { onChange(address.copy(city = it)) },
                 label = { Text("City") },
                 singleLine = true,
+                shape = RoundedCornerShape(14.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
                 modifier = Modifier.weight(1f)
             )
@@ -280,6 +300,7 @@ fun AddressFields(
                 onValueChange = { onChange(address.copy(state = it)) },
                 label = { Text("State") },
                 singleLine = true,
+                shape = RoundedCornerShape(14.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
                 modifier = Modifier.weight(1f)
             )
@@ -292,6 +313,7 @@ fun AddressFields(
             },
             label = { Text("PIN code") },
             singleLine = true,
+            shape = RoundedCornerShape(14.dp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             modifier = Modifier.fillMaxWidth()
         )

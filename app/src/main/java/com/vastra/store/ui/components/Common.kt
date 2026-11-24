@@ -50,7 +50,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import com.vastra.store.data.model.Product
 import com.vastra.store.util.formatInr
 import java.util.Locale
@@ -81,7 +81,7 @@ fun VastraTopBar(
         },
         actions = actions,
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background,
+            containerColor = MaterialTheme.colorScheme.surface,
             titleContentColor = MaterialTheme.colorScheme.onBackground
         ),
         windowInsets = WindowInsets(0, 0, 0, 0)
@@ -117,7 +117,7 @@ fun RatingPill(rating: Double, modifier: Modifier = Modifier) {
 
 @Composable
 fun PriceBlock(product: Product, large: Boolean = false) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(
             text = formatInr(product.finalPrice),
             style = if (large) MaterialTheme.typography.headlineSmall
@@ -125,21 +125,73 @@ fun PriceBlock(product: Product, large: Boolean = false) {
             fontWeight = FontWeight.SemiBold
         )
         if (product.discountPercentage >= 1.0) {
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = formatInr(product.price),
-                style = if (large) MaterialTheme.typography.bodyLarge
-                else MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textDecoration = TextDecoration.LineThrough
-            )
-            Spacer(Modifier.width(6.dp))
-            Text(
-                text = "${product.discountPercentage.roundToInt()}% off",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.tertiary
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = formatInr(product.price),
+                    style = if (large) MaterialTheme.typography.bodyMedium
+                    else MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textDecoration = TextDecoration.LineThrough
+                )
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    text = "${product.discountPercentage.roundToInt()}% off",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+            }
         }
+    }
+}
+
+@Composable
+fun ProductImage(
+    model: Any?,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Crop
+) {
+    if (model == null || (model is String && model.isBlank())) {
+        ImageUnavailable(modifier)
+    } else {
+        SubcomposeAsyncImage(
+            model = model,
+            contentDescription = contentDescription,
+            contentScale = contentScale,
+            modifier = modifier,
+            loading = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(22.dp),
+                        strokeWidth = 2.dp
+                    )
+                }
+            },
+            error = {
+                ImageUnavailable(Modifier.fillMaxSize())
+            }
+        )
+    }
+}
+
+@Composable
+private fun ImageUnavailable(modifier: Modifier) {
+    Box(
+        modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Image unavailable",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(12.dp)
+        )
     }
 }
 
@@ -156,45 +208,48 @@ fun ProductCard(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onOpen),
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Box {
-            AsyncImage(
+            ProductImage(
                 model = product.thumbnail,
                 contentDescription = product.title,
-                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(0.82f)
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .aspectRatio(0.78f)
             )
             if (!product.inStock) {
                 Surface(
                     color = MaterialTheme.colorScheme.error.copy(alpha = 0.90f),
-                    shape = RoundedCornerShape(bottomEnd = 12.dp),
-                    modifier = Modifier.align(Alignment.TopStart)
+                    shape = RoundedCornerShape(50),
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(8.dp)
                 ) {
                     Text(
                         text = "Out of stock",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onError,
                         fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                     )
                 }
             } else if (product.discountPercentage >= 1.0) {
                 Surface(
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = RoundedCornerShape(bottomEnd = 12.dp),
-                    modifier = Modifier.align(Alignment.TopStart)
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shape = RoundedCornerShape(50),
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(8.dp)
                 ) {
                     Text(
                         text = "${product.discountPercentage.roundToInt()}% off",
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                     )
                 }
             }
@@ -202,8 +257,8 @@ fun ProductCard(
                 onClick = onWishlistToggle,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(6.dp)
-                    .size(32.dp)
+                    .padding(8.dp)
+                    .size(38.dp)
                     .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.92f), CircleShape)
             ) {
                 Icon(
@@ -211,12 +266,12 @@ fun ProductCard(
                     contentDescription = if (wishlisted) "Remove from wishlist" else "Save to wishlist",
                     tint = if (wishlisted) MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(17.dp)
+                    modifier = Modifier.size(19.dp)
                 )
             }
         }
 
-        Column(Modifier.padding(horizontal = 10.dp, vertical = 10.dp)) {
+        Column(Modifier.padding(horizontal = 12.dp, vertical = 12.dp)) {
             Text(
                 text = product.brandLabel.uppercase(Locale.getDefault()),
                 style = MaterialTheme.typography.labelSmall,
@@ -234,7 +289,7 @@ fun ProductCard(
             )
             Spacer(Modifier.height(6.dp))
             PriceBlock(product)
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(8.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -243,7 +298,7 @@ fun ProductCard(
                 Spacer(Modifier.weight(1f))
                 FilledTonalIconButton(
                     onClick = onQuickAdd,
-                    modifier = Modifier.size(32.dp),
+                    modifier = Modifier.size(38.dp),
                     enabled = product.inStock
                 ) {
                     Icon(
@@ -267,23 +322,23 @@ fun QuantityStepper(
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(50),
+        shape = RoundedCornerShape(14.dp),
         color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onDecrease, modifier = Modifier.size(32.dp)) {
+            IconButton(onClick = onDecrease, modifier = Modifier.size(38.dp)) {
                 Icon(Icons.Filled.Remove, contentDescription = "Decrease quantity", modifier = Modifier.size(15.dp))
             }
             Text(
                 text = quantity.toString(),
                 style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.width(22.dp),
+                modifier = Modifier.width(26.dp),
                 textAlign = TextAlign.Center
             )
             IconButton(
                 onClick = onIncrease,
                 enabled = canIncrease,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(38.dp)
             ) {
                 Icon(Icons.Filled.Add, contentDescription = "Increase quantity", modifier = Modifier.size(15.dp))
             }
@@ -383,13 +438,21 @@ fun EmptyState(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(44.dp),
-            tint = MaterialTheme.colorScheme.outline
-        )
-        Spacer(Modifier.height(14.dp))
+        Surface(
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.primaryContainer,
+            modifier = Modifier.size(76.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(32.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+        Spacer(Modifier.height(20.dp))
         Text(title, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
         Spacer(Modifier.height(6.dp))
         Text(
