@@ -1,60 +1,60 @@
-# Vastra — Production-Grade Fashion Store Android App
+# Vastra
 
-A production-level Android e-commerce shopping application written in Kotlin with Jetpack Compose (Material 3).
-It implements an architecture designed for high performance, security, offline resilience, and delightful shopper experience: catalogue, search and multi-attribute filters, product detail with gallery pager, bag, wishlist, checkout with input validation, order history, and profile management.
+Vastra is an Android fashion-store demo built with Kotlin and Jetpack Compose. It includes a product catalogue, search and filters, product details, a shopping bag, wishlist, checkout flow, order history, and a local shopper profile.
 
----
+The catalogue is loaded from DummyJSON. Bag contents, wishlist, profile, address, orders, and the catalogue cache are stored on the device. Checkout records a local demo order; the app does not connect to a payment processor or order-management backend.
 
-## 1. Production Architecture & Highlights
+## Features
 
-| Domain | Implementation Details |
-| --- | --- |
-| **UI & Presentation** | Jetpack Compose (Material 3), Edge-to-Edge display, Reactive `StateFlow` unidirectional data flow (UDF), and edge-to-edge system insets. |
-| **Dependency Injection** | Manual App Container pattern (`AppContainer`), providing clean singleton lifecycle management without reflection overhead. |
-| **Network & API** | Retrofit 2 + Gson with OkHttp client, connection pooling, 20s timeouts, automatic retry on failure, and environment-aware logging (`HttpLoggingInterceptor.Level.BASIC` in Debug, `Level.NONE` in Release). |
-| **Offline-First Resilience** | Two-tiered caching: in-memory repository cache plus persistent on-disk JSON cache in DataStore. Network failure automatically falls back to cached products without breaking user experience. |
-| **Image Loading & Cache** | Coil with custom `ImageLoaderFactory`, crossfade animations, 25% memory cache cap, and disk caching (`cacheDir/image_cache`). |
-| **Security & Privacy** | R8 code shrinking and resource minification enabled for release builds (`isMinifyEnabled = true`, `isShrinkResources = true`). Comprehensive ProGuard keep rules for models, serializers, and DataStore structures. Cleartext traffic disabled (`usesCleartextTraffic="false"`). Backup rules configured to prevent leakage of PII/order details to unencrypted cloud backups. Removed hardcoded personal credentials. |
-| **Data Integrity & UX** | Race condition protection during order placement (`isPlacingOrder` guard), sanitized address formatting (automatic trimming, Indian phone and 6-digit PIN validation), out-of-stock validation in bag and catalogue, and background refresh indicator. |
-| **Automated Testing** | Unit tests in `app/src/test/` verifying pricing, discount maths, currency formatting, shipping thresholds, and address validation rules. |
+- Browse products, search by title/brand/category, filter and sort results.
+- View product images, prices, discounts, stock, and applicable size options.
+- Manage bag quantities and wishlist items.
+- Validate a delivery address and place a local demo order.
+- View saved orders and manage local profile details.
+- Load a cached catalogue when the network is unavailable.
 
----
+## Requirements
 
-## 2. Screens & Features
+- Android Studio with Android SDK Platform 34 installed.
+- JDK 17.
+- An emulator or device running Android 8.0 (API 26) or later.
 
-- **Shop:** Browse fashion pieces in a 2-column grid. Search with real-time filtering by title, brand, or category. Sort by rating, price, and discount. Filter by rating, maximum price slider, and in-stock toggle. Visual "Out of stock" badges and live background refresh indicator.
-- **Product Detail:** Image pager with dots indicator, brand label, rating, stock status, strike-through MRP with discount percentage, size selector chips, quantity stepper, description, shipping estimate, and sticky add-to-bag / wishlist actions.
-- **Bag:** Cart items with thumbnail, size indicator, out-of-stock alerts, quantity stepper (up to 10), remove action, free delivery progress nudge, subtotal, shipping charge, and checkout button.
-- **Checkout:** Delivery address form with validation (recipient name, 10-digit Indian phone starting 6–9, street, city, state, 6-digit PIN), pre-filled from saved profile, payment method selection, order summary breakdown, and single-flight order placement.
-- **Orders:** Order history with expandable line items, thumbnails, status pill ("Confirmed"), date formatting, and saved delivery address.
-- **Profile:** Shopper profile, order/saved/bag count tiles, saved delivery address management, app version info, and data clear action.
+The Gradle wrapper downloads the configured Gradle distribution on first use.
 
----
+## Build and test
 
-## 3. How to Build & Run
+From macOS or Linux:
 
-1. Open the project in **Android Studio (Ladybug or newer)** with **JDK 17**.
-2. Let Gradle sync dependencies.
-3. Select an emulator or physical device running **Android 8.0+ (API 26+)**.
-4. Run:
-   ```bash
-   ./gradlew assembleDebug       # Build debug APK
-   ./gradlew testDebugUnitTest   # Run unit tests
-   ./gradlew assembleRelease     # Build minified production release APK
-   ```
+```shell
+./gradlew testDebugUnitTest
+./gradlew assembleDebug
+./gradlew assembleRelease
+```
 
-## 5. CI/CD
+From Windows PowerShell:
 
-GitHub Actions runs the unit tests and builds the debug APK on every push and pull request. The debug APK is available as a workflow artifact.
+```powershell
+.\gradlew.bat testDebugUnitTest
+.\gradlew.bat assembleDebug
+.\gradlew.bat assembleRelease
+```
 
-Pushing a version tag such as `v1.0.0` runs the release workflow and publishes the release APK to GitHub Releases. The APK is unsigned; configure Android signing credentials before distributing an installable production build.
+The debug APK is written to `app/build/outputs/apk/debug/`. The release APK is minified and unsigned; it is not ready for production distribution until signing is configured.
 
----
+## Project documentation
 
-## 6. Security & ProGuard Configuration
+- [Architecture](docs/architecture.md): app layers, startup, data flow, persistence, and current system boundaries.
+- [Developer guide](docs/developer-guide.md): setup, build/test commands, project layout, and guidance for common changes.
 
-In `app/proguard-rules.pro`:
-- Keeps reflectively parsed Retrofit & Gson models: `com.vastra.store.data.model.**`
-- Keeps DataStore persistent models: `com.vastra.store.data.local.**`
-- Keeps UI enum options: `com.vastra.store.ui.SortOption`
-- Preserves `@SerializedName` annotations and field signatures for safe R8 obfuscation.
+## CI/CD
+
+GitHub Actions runs unit tests and builds the debug APK on pushes and pull requests. The APK is retained as a workflow artifact.
+
+Pushing a tag matching `v*` runs the release workflow and publishes the unsigned release APK to GitHub Releases. Configure release signing before using an APK as an installable production release.
+
+## Security notes
+
+- Network requests use HTTPS and cleartext traffic is disabled in the Android manifest.
+- Shopper data is stored locally using Android DataStore Preferences. The app does not provide account authentication or payment processing.
+- Release builds enable R8 code shrinking and resource shrinking.
+- See `app/proguard-rules.pro` for serialization-related keep rules and the manifest backup rules under `app/src/main/res/xml/`.
